@@ -1349,17 +1349,12 @@ if (contactForm) {
         );
 
 
-    if (
-        canvas &&
-        !reduceMotion
-    ) {
+    if ( canvas && !reduceMotion ) {
 
-        const ctx =
-            canvas.getContext("2d");
+        const ctx = canvas.getContext("2d");
 
 
         let particles = [];
-
         let width = 0;
         let height = 0;
 
