@@ -1210,16 +1210,11 @@ if (contactForm) {
     const aiInput    = document.getElementById("ai-agent-input");
     const aiMessages = document.getElementById("ai-agent-messages");
 
-    // Pure client-side setup: this calls Groq directly from the browser
-    // using the key in config.js. See the warning in that file — the key
-    // is visible to anyone who inspects this page.
-    const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-
-    const AI_SYSTEM_PROMPT =
-        "You are the Merkisys website assistant. Merkisys is a technology, " +
-        "innovation and digital solutions company. Answer visitor questions " +
-        "helpfully and concisely. If you don't know something specific about " +
-        "the company, say so honestly instead of making details up.";
+    // The browser NEVER sees the Groq API key. Messages are sent to our
+    // own backend (server.js), which reads GROQ_API_KEY from .env and
+    // forwards the request to Groq. Change this if you deploy the
+    // backend somewhere other than the same origin as this page.
+    const AI_AGENT_ENDPOINT = "/api/chat";
 
     let aiHistory = [];
     let aiOpen = false;
@@ -1288,39 +1283,16 @@ if (contactForm) {
         const typingBubble = showAiTyping();
 
         try {
-            if (typeof GROQ_API_KEY === "undefined" ||
-                !GROQ_API_KEY ||
-                GROQ_API_KEY === "your_groq_api_key_here") {
-                throw new Error("Missing Groq API key");
-            }
-
-            const response = await fetch(GROQ_ENDPOINT, {
+            const response = await fetch(AI_AGENT_ENDPOINT, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${GROQ_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: (typeof GROQ_MODEL !== "undefined" && GROQ_MODEL)
-                        || "llama-3.3-70b-versatile",
-                    messages: [
-                        { role: "system", content: AI_SYSTEM_PROMPT },
-                        ...aiHistory
-                    ],
-                    temperature: 0.7,
-                    max_tokens: 512
-                })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: aiHistory })
             });
 
-            if (!response.ok) {
-                const errText = await response.text();
-                console.error("Groq API error:", response.status, errText);
-                throw new Error("Groq request failed");
-            }
+            if (!response.ok) throw new Error("Request failed");
 
             const data = await response.json();
-            const reply = data.choices?.[0]?.message?.content?.trim()
-                || "Sorry, I couldn't generate a response.";
+            const reply = data.reply || "Sorry, I couldn't process that.";
 
             typingBubble?.remove();
             appendAiMessage("bot", reply);
@@ -1328,12 +1300,10 @@ if (contactForm) {
 
         } catch (err) {
             typingBubble?.remove();
-
-            const message = (err && err.message === "Missing Groq API key")
-                ? "The assistant isn't set up yet — add your Groq API key to config.js."
-                : "I'm having trouble connecting right now. Please try again in a moment.";
-
-            appendAiMessage("bot", message);
+            appendAiMessage(
+                "bot",
+                "I'm having trouble connecting right now. Please make sure the chat server is running."
+            );
             console.error("AI agent error:", err);
         }
     });
@@ -1349,12 +1319,17 @@ if (contactForm) {
         );
 
 
-    if ( canvas && !reduceMotion ) {
+    if (
+        canvas &&
+        !reduceMotion
+    ) {
 
-        const ctx = canvas.getContext("2d");
+        const ctx =
+            canvas.getContext("2d");
 
 
         let particles = [];
+
         let width = 0;
         let height = 0;
 
