@@ -6,7 +6,11 @@
 
     <meta name="description"
           content="Merkisys - Technology, Innovation and Digital Solutions">
-
+    <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23A7A7A7' d='M52 15C42 6 27 3 16 9C5 15 1 27 4 39C6 47 11 53 18 57C11 49 9 39 12 29C16 16 28 9 41 9C45 9 49 11 52 15Z'/%3E%3Cpath fill='%230879C9' d='M42 10C29 13 18 22 16 35C14 47 20 57 31 61C37 63 43 62 48 59C36 60 27 54 24 45C20 34 24 22 33 16C36 13 39 11 42 10Z'/%3E%3Cpath fill='%23A7A7A7' d='M20 45C26 54 37 57 48 53C51 52 54 50 57 47C52 54 44 58 35 58C27 58 20 53 16 46Z'/%3E%3C/svg%3E"
+/>
     <title>Merkisys | Technology • Innovation • Solutions</title>
 
     <link rel="stylesheet" href="style.css">
@@ -705,49 +709,30 @@
                     Let's talk about how technology can help.
                 </p>
 
-            </div>
+    <form
+        id="contact-form"
+        action="https://formsubmit.co/ajax/prabhakaran@merkisys.com"
+        method="POST"
+    >
+    <input type="hidden" name="_cc" value="vidhya@merkisys.com">
+    <input type="hidden" name="_subject" value="New Contact Message - Merkisys">
+    <input type="hidden" name="_template" value="table">
+    <input type="hidden" name="_captcha" value="false">
 
+    <div class="form-row">
+        <input type="text" name="name" placeholder="Your Name" required>
+        <input type="email" name="email" placeholder="Email Address" required>
+    </div>
 
-            <form id="contact-form">
+    <input type="text" name="subject" placeholder="Subject" required>
+    <textarea name="message" rows="6" placeholder="Tell us about your project..." minlength="20" required></textarea>
 
-                <div class="form-row">
-
-                    <input
-                        type="text"
-                        name="name"
-                        placeholder="Your Name">
-
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Email Address">
-
-                </div>
-
-
-                <input
-                    type="text"
-                    name="subject"
-                    placeholder="Subject">
-
-
-                <textarea
-                    name="message"
-                    rows="6"
-                    placeholder="Tell us about your project..."></textarea>
-
-
-                <button
-                    type="submit"
-                    class="primary-btn submit-btn">
-
-                    Send Message
-                    <span>→</span>
-
-                </button>
-
-            </form>
-
+    <button type="submit" class="primary-btn submit-btn">
+        Send Message <span>→</span>
+    </button>
+</form>
+<!-- Ensure your target iframe exists in the DOM for silent submission -->
+<!-- <iframe id="contact-submit-frame" name="contact-submit-frame" style="display:none;"></iframe> -->
         </div>
 
     </div>
@@ -836,12 +821,11 @@
 
             <p class="contact-info">
                 <strong>Phone:</strong>
-                <a href="tel:+919944508141">+91 9944 5081 41</a>
+                +91 9944508141
             </p>
 
             <p class="contact-info">
                 <strong>Email:</strong>
-                <a href="mailto:support@merkisys.com">
                     support@merkisys.com
                 </a>
             </p>
@@ -861,14 +845,40 @@
 </footer>
 
 
-<!-- ================= BACK TOP ================= -->
+<!-- ================= AI AGENT ================= -->
 
-<button id="back-to-top"
-        aria-label="Back to top">
-    ↑
+<div id="ai-agent-panel" aria-hidden="true">
+
+    <div class="ai-agent-header">
+        <img src="assets/merkisys-logo.webp" alt="Merkisys" class="ai-agent-header-logo">
+        <div class="ai-agent-header-text">
+            <strong>Merkisys Assistant</strong>
+            <span>Online</span>
+        </div>
+        <button id="ai-agent-close" aria-label="Close chat">✕</button>
+    </div>
+
+    <div id="ai-agent-messages"></div>
+
+    <form id="ai-agent-form" autocomplete="off">
+        <input
+            type="text"
+            id="ai-agent-input"
+            placeholder="Ask something..."
+            aria-label="Message"
+            autocomplete="off"
+        >
+        <button type="submit" id="ai-agent-send" aria-label="Send message">➤</button>
+    </form>
+
+</div>
+
+<button id="ai-agent-toggle" aria-label="Open chat assistant">
+    <img src="assets/merkisys-logo.webp" alt="" class="ai-agent-toggle-logo">
 </button>
 
 
+<script src="config.js"></script>
 <script src="script.js"></script>
 
 </body>

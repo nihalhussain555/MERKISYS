@@ -1117,248 +1117,226 @@ document.addEventListener("DOMContentLoaded", () => {
     /* =====================================================
        CONTACT FORM
     ===================================================== */
+const contactForm = document.getElementById("contact-form");
 
-    const form =
-        document.getElementById(
-            "contact-form"
-        );
+if (contactForm) {
+    const nameInput = contactForm.querySelector('input[name="name"]');
+    const emailInput = contactForm.querySelector('input[name="email"]');
+    const subjectInput = contactForm.querySelector('input[name="subject"]');
+    const messageInput = contactForm.querySelector('textarea[name="message"]');
+    const submitButton = contactForm.querySelector(".submit-btn");
 
+    contactForm.addEventListener("submit", function (event) {
+        event.preventDefault();
 
-    function showToast(message) {
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const subject = subjectInput.value.trim();
+        const message = messageInput.value.trim();
 
-        let toast =
-            document.getElementById(
-                "toast"
-            );
-
-
-        if (!toast) {
-
-            toast =
-                document.createElement(
-                    "div"
-                );
-
-            toast.id = "toast";
-
-            document.body.appendChild(
-                toast
-            );
+        if (!name) {
+            showToast("Please enter your name.");
+            nameInput.focus();
+            return;
         }
 
+        if (!email || !emailInput.checkValidity()) {
+            showToast("Please enter a valid email address.");
+            emailInput.focus();
+            return;
+        }
 
-        toast.textContent =
-            message;
+        if (!subject) {
+            showToast("Please enter a subject.");
+            subjectInput.focus();
+            return;
+        }
 
-        toast.classList.add(
-            "show"
-        );
+        if (!message || message.length < 20) {
+            showToast("Please enter at least 20 characters.");
+            messageInput.focus();
+            return;
+        }
 
+        const originalButtonHTML = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = `Sending... <span>→</span>`;
 
-        clearTimeout(
-            toast.hideTimer
-        );
+        fetch(contactForm.action, {
+            method: "POST",
+            headers: { "Accept": "application/json" },
+            body: new FormData(contactForm)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Request failed");
+            return response.json();
+        })
+        .then(data => {
+                submitButton.disabled = false;
+                submitButton.innerHTML = `Message Sent! <span>✓</span>`;
 
+                // Clear all form fields
+                contactForm.reset();
 
-        toast.hideTimer =
-            setTimeout(() => {
+                // Remove validation/error styling
+                contactForm.querySelectorAll("input, textarea").forEach(field => {
+                    field.classList.remove("invalid");
+                });
 
-                toast.classList.remove(
-                    "show"
-                );
+                // Show success message
+                showToast("Your message has been sent successfully!");
 
-            }, 3500);
-    }
-
-
-    if (form) {
-
-        const fields =
-            form.querySelectorAll(
-                "input, textarea"
-            );
-
-
-        fields.forEach(field => {
-
-            field.addEventListener(
-                "input",
-                () => {
-
-                    field.classList.remove(
-                        "invalid"
-                    );
-
-                }
-            );
-
-        });
-
-
-        form.addEventListener(
-            "submit",
-            event => {
-
-                event.preventDefault();
-
-
-                const name =
-                    form.elements.name;
-
-                const email =
-                    form.elements.email;
-
-                const subject =
-                    form.elements.subject;
-
-                const message =
-                    form.elements.message;
-
-
-                let valid = true;
-
-
-                if (
-                    !name.value.trim()
-                ) {
-
-                    name.classList.add(
-                        "invalid"
-                    );
-
-                    valid = false;
-                }
-
-
-                const emailValid =
-                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                        .test(
-                            email.value.trim()
-                        );
-
-
-                if (!emailValid) {
-
-                    email.classList.add(
-                        "invalid"
-                    );
-
-                    valid = false;
-                }
-
-
-                if (
-                    !subject.value.trim()
-                ) {
-
-                    subject.classList.add(
-                        "invalid"
-                    );
-
-                    valid = false;
-                }
-
-
-                if (
-                    message.value
-                        .trim()
-                        .length < 20
-                ) {
-
-                    message.classList.add(
-                        "invalid"
-                    );
-
-                    valid = false;
-                }
-
-
-                if (!valid) {
-
-                    showToast(
-                        "Please complete the required fields."
-                    );
-
-                    return;
-                }
-
-
-                const button =
-                    form.querySelector(
-                        ".submit-btn"
-                    );
-
-
-                const originalHTML =
-                    button.innerHTML;
-
-
-                button.disabled = true;
-
-                button.innerHTML =
-                    "Preparing...";
-
-
+                // Restore button after 3 seconds
                 setTimeout(() => {
-
-                    button.disabled = false;
-
-                    button.innerHTML =
-                        originalHTML;
-
-                    form.reset();
-
-
-                    showToast(
-                        "Message prepared successfully!"
-                    );
-
-                }, 700);
-
-            }
-        );
-    }
-
-
+                    submitButton.innerHTML = originalButtonHTML;
+                }, 3000);
+            })
+        .catch(error => {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonHTML;
+            showToast("Failed to send message. Please try again.");
+            console.error(error);
+        });
+    });
+}
     /* =====================================================
-       BACK TO TOP
+       AI AGENT (Groq powered chat)
     ===================================================== */
 
-    const backToTop =
-        document.getElementById(
-            "back-to-top"
-        );
+    const aiToggle   = document.getElementById("ai-agent-toggle");
+    const aiPanel    = document.getElementById("ai-agent-panel");
+    const aiClose    = document.getElementById("ai-agent-close");
+    const aiForm     = document.getElementById("ai-agent-form");
+    const aiInput    = document.getElementById("ai-agent-input");
+    const aiMessages = document.getElementById("ai-agent-messages");
 
+    // Pure client-side setup: this calls Groq directly from the browser
+    // using the key in config.js. See the warning in that file — the key
+    // is visible to anyone who inspects this page.
+    const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
-    function toggleBackToTop() {
+    const AI_SYSTEM_PROMPT =
+        "You are the Merkisys website assistant. Merkisys is a technology, " +
+        "innovation and digital solutions company. Answer visitor questions " +
+        "helpfully and concisely. If you don't know something specific about " +
+        "the company, say so honestly instead of making details up.";
 
-        if (!backToTop) return;
+    let aiHistory = [];
+    let aiOpen = false;
 
-        backToTop.classList.toggle(
-            "show",
-            window.scrollY > 700
-        );
+    function openAiPanel() {
+        aiOpen = true;
+        aiPanel?.classList.add("show");
+        aiPanel?.setAttribute("aria-hidden", "false");
+        aiToggle?.classList.add("is-active");
+
+        if (aiMessages && aiMessages.childElementCount === 0) {
+            appendAiMessage(
+                "bot",
+                "Hi! I'm the Merkisys assistant. Ask me anything about our services or solutions."
+            );
+        }
+
+        setTimeout(() => aiInput?.focus(), 200);
     }
 
+    function closeAiPanel() {
+        aiOpen = false;
+        aiPanel?.classList.remove("show");
+        aiPanel?.setAttribute("aria-hidden", "true");
+        aiToggle?.classList.remove("is-active");
+    }
 
-    window.addEventListener(
-        "scroll",
-        toggleBackToTop,
-        { passive: true }
-    );
+    aiToggle?.addEventListener("click", () => {
+        aiOpen ? closeAiPanel() : openAiPanel();
+    });
 
+    aiClose?.addEventListener("click", closeAiPanel);
 
-    backToTop?.addEventListener(
-        "click",
-        () => {
+    function appendAiMessage(role, text) {
+        if (!aiMessages) return;
 
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
+        const bubble = document.createElement("div");
+        bubble.className = `ai-msg ${role}`;
+        bubble.textContent = text;
+
+        aiMessages.appendChild(bubble);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+
+        return bubble;
+    }
+
+    function showAiTyping() {
+        const bubble = document.createElement("div");
+        bubble.className = "ai-msg bot typing";
+        bubble.innerHTML = "<span></span><span></span><span></span>";
+        aiMessages?.appendChild(bubble);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+        return bubble;
+    }
+
+    aiForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const text = aiInput?.value.trim();
+        if (!text) return;
+
+        appendAiMessage("user", text);
+        aiHistory.push({ role: "user", content: text });
+        aiInput.value = "";
+
+        const typingBubble = showAiTyping();
+
+        try {
+            if (typeof GROQ_API_KEY === "undefined" ||
+                !GROQ_API_KEY ||
+                GROQ_API_KEY === "your_groq_api_key_here") {
+                throw new Error("Missing Groq API key");
+            }
+
+            const response = await fetch(GROQ_ENDPOINT, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${GROQ_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: (typeof GROQ_MODEL !== "undefined" && GROQ_MODEL)
+                        || "llama-3.3-70b-versatile",
+                    messages: [
+                        { role: "system", content: AI_SYSTEM_PROMPT },
+                        ...aiHistory
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 512
+                })
             });
 
+            if (!response.ok) {
+                const errText = await response.text();
+                console.error("Groq API error:", response.status, errText);
+                throw new Error("Groq request failed");
+            }
+
+            const data = await response.json();
+            const reply = data.choices?.[0]?.message?.content?.trim()
+                || "Sorry, I couldn't generate a response.";
+
+            typingBubble?.remove();
+            appendAiMessage("bot", reply);
+            aiHistory.push({ role: "assistant", content: reply });
+
+        } catch (err) {
+            typingBubble?.remove();
+
+            const message = (err && err.message === "Missing Groq API key")
+                ? "The assistant isn't set up yet — add your Groq API key to config.js."
+                : "I'm having trouble connecting right now. Please try again in a moment.";
+
+            appendAiMessage("bot", message);
+            console.error("AI agent error:", err);
         }
-    );
+    });
 
 
     /* =====================================================
