@@ -1036,17 +1036,13 @@ document.addEventListener("DOMContentLoaded", () => {
             "click",
             () => {
 
-                const filter =
-                    button.dataset.filter;
+                const filter = button.dataset.filter;
 
 
                 filterButtons.forEach(
                     btn => {
 
-                        btn.classList.toggle(
-                            "active",
-                            btn === button
-                        );
+                        btn.classList.toggle( "active", btn === button );
 
                     }
                 );
@@ -1054,27 +1050,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 projectCards.forEach(
                     card => {
+                        const category = card.dataset.category || "";
 
-                        const category =
-                            card.dataset.category ||
-                            "";
-
-                        const matches =
-                            filter === "all" ||
-                            category.includes(
-                                filter
-                            );
+                        const matches = filter === "all" || category.includes( filter );
 
 
                         if (matches) {
 
-                            card.classList.remove(
-                                "hidden"
-                            );
+                            card.classList.remove( "hidden" );
 
-                            if (
-                                !reduceMotion
-                            ) {
+                            if ( !reduceMotion ) {
 
                                 card.animate(
                                     [
