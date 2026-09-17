@@ -1204,6 +1204,42 @@ if (contactForm) {
     let aiHistory = [];
     let aiOpen = false;
 
+    /**
+     * Escape raw HTML special characters so any text (including
+     * text that came back from the AI) can never inject markup.
+     * Formatting is re-added afterwards in a controlled way by
+     * formatAiText(), so this must run first.
+     */
+    function escapeHtml(str) {
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    /**
+     * Turn the lightweight Markdown the backend sends
+     * (**bold** headers, blank-line paragraph breaks, • bullets)
+     * into safe HTML the chat bubble can actually render.
+     */
+    function formatAiText(text) {
+        const escaped = escapeHtml(text);
+
+        // **bold** -> <strong>bold</strong>
+        const bolded = escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+        // Blank line(s) => paragraph break, single \n => <br>
+        const html = bolded
+            .split(/\n{2,}/)
+            .map(paragraph => paragraph.split("\n").join("<br>"))
+            .map(paragraph => `<p>${paragraph}</p>`)
+            .join("");
+
+        return html;
+    }
+
     function openAiPanel() {
         aiOpen = true;
         aiPanel?.classList.add("show");
@@ -1238,7 +1274,16 @@ if (contactForm) {
 
         const bubble = document.createElement("div");
         bubble.className = `ai-msg ${role}`;
-        bubble.textContent = text;
+
+        if (role === "bot") {
+            // Bot replies may contain **bold** headers and line breaks
+            // from the backend — render them as real HTML.
+            bubble.innerHTML = formatAiText(text);
+        } else {
+            // User input is plain text — no formatting needed, and this
+            // keeps it safe by construction (no HTML parsing at all).
+            bubble.textContent = text;
+        }
 
         aiMessages.appendChild(bubble);
         aiMessages.scrollTop = aiMessages.scrollHeight;

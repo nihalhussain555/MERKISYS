@@ -94,6 +94,13 @@ TONE:
 Friendly, professional, concise, and direct.
 `;
 
+/**
+ * Light, general-purpose cleanup of the model's Markdown-lite output.
+ * (The previous version also force-wrapped a hard-coded list of exact
+ * phrases like "About Merkisys" in **bold** via regex — that was removed
+ * because it was brittle (broke on any slight rewording) and unnecessary
+ * once the frontend properly renders **bold** and line breaks itself.)
+ */
 function cleanAgentResponse(text) {
     if (!text) return "";
 
@@ -102,31 +109,14 @@ function cleanAgentResponse(text) {
     // Convert standard Markdown h1-h6 headers into clean bold lines (**Header**)
     cleaned = cleaned.replace(/^#{1,6}\s*(.+)$/gm, "**$1**");
 
-    // Fix issues where headers (e.g. "About Merkisys", "Core Services") get merged directly into body text
-    const knownHeaders = [
-        "About Merkisys",
-        "Core Services",
-        "Why Choose Merkisys\\?",
-        "Custom Software & Application Development",
-        "Cloud & Infrastructure Services",
-        "Data Analytics & AI/ML",
-        "Digital Strategy & Consulting",
-        "Cybersecurity & Compliance"
-    ];
-
-    knownHeaders.forEach(header => {
-        const regex = new RegExp(`(?<!\\*\\*)(?:\\b|\\d+\\.\\s*)(${header})(?!\\*\\*)`, "gi");
-        cleaned = cleaned.replace(regex, "\n\n**$1**\n\n");
-    });
-
-    // Clean up duplicate bolding syntax if generated twice
+    // Collapse duplicate/triple bold markers down to exactly **
     cleaned = cleaned.replace(/\*\*\s*\*\*/g, "");
     cleaned = cleaned.replace(/\*\*+/g, "**");
 
-    // Format numbered list titles as separate bold lines
+    // Format numbered list titles ("1. Something") as separate bold lines
     cleaned = cleaned.replace(/(\n|^)(\d+\.\s*)([^\n•]+)(\n|$)/g, "$1**$2$3**$4");
 
-    // Remove unwanted Markdown elements (backticks, code blocks)
+    // Remove code fences / inline backticks (model is told not to use them, but just in case)
     cleaned = cleaned.replace(/```[\s\S]*?```/g, "");
     cleaned = cleaned.replace(/`([^`]+)`/g, "$1");
 
@@ -135,7 +125,7 @@ function cleanAgentResponse(text) {
     cleaned = cleaned.replace(/(?<!\*)\*(?!\*)([^*\n]+?)(?<!\*)\*(?!\*)/g, "$1");
     cleaned = cleaned.replace(/(?<!_)_(?!_)([^_\n]+?)(?<!_)_(?!_)/g, "$1");
 
-    // Standardize bullet points into neat uniform bullets with newlines
+    // Standardize bullet points into neat uniform bullets, each on its own line
     cleaned = cleaned.replace(/^\s*[-*+]\s+/gm, "• ");
     cleaned = cleaned.replace(/(?<!\n)\s*•\s*/g, "\n• ");
 
