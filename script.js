@@ -36,10 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!themeIcon) return;
 
-        themeIcon.textContent =
-            root.dataset.theme === "dark"
-                ? "☀"
-                : "☾";
+        themeIcon.textContent = root.dataset.theme === "dark" ? "☀" : "☾";
     }
 
     updateThemeIcon();
