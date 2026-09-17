@@ -20,14 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedTheme =
         localStorage.getItem("theme");
 
-    const systemDark =
-        window.matchMedia(
-            "(prefers-color-scheme: dark)"
-        ).matches;
-
+    // Dark is the default theme now — a returning visitor's saved
+    // choice (light or dark) still wins, but a first-time visitor
+    // always starts on dark, regardless of their system preference.
     const initialTheme =
-        savedTheme ||
-        (systemDark ? "dark" : "light");
+        savedTheme || "dark";
 
     root.dataset.theme = initialTheme;
 
@@ -36,7 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!themeIcon) return;
 
-        themeIcon.textContent = root.dataset.theme === "dark" ? "☀" : "☾";
+        themeIcon.textContent =
+            root.dataset.theme === "dark"
+                ? "☀"
+                : "☾";
     }
 
     updateThemeIcon();
