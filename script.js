@@ -20,11 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedTheme =
         localStorage.getItem("theme");
 
-    // Dark is the default theme now — a returning visitor's saved
-    // choice (light or dark) still wins, but a first-time visitor
-    // always starts on dark, regardless of their system preference.
-    const initialTheme =
-        savedTheme || "dark";
+    // TEMPORARY: dark is forced as the only theme right now, since the
+    // theme-toggle button is commented out in index.html. This ignores
+    // any old "light" value a visitor may still have in localStorage
+    // from before the toggle was removed. To restore user choice later,
+    // change this back to: savedTheme || "dark"
+    const initialTheme = "dark";
 
     root.dataset.theme = initialTheme;
 
